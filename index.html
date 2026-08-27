@@ -1,0 +1,2966 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Badan Kuat! Pilih Khasiat</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:"Trebuchet MS",Arial,sans-serif;
+    user-select:none;
+}
+
+body{
+    min-height:100vh;
+    background:
+        radial-gradient(circle at 20% 20%,rgba(255,255,255,.25),transparent 20%),
+        linear-gradient(#8ed081,#5aaa5a);
+    color:#243124;
+}
+
+/* ================================
+   HEADER
+================================ */
+
+.game-header{
+    background:#245b2a;
+    color:white;
+    padding:14px 20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:12px;
+    box-shadow:0 4px 15px rgba(0,0,0,.25);
+}
+
+.game-title{
+    font-size:25px;
+    font-weight:900;
+}
+
+.game-status{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+}
+
+.status{
+    background:rgba(255,255,255,.16);
+    border:2px solid rgba(255,255,255,.25);
+    padding:8px 15px;
+    border-radius:30px;
+    font-weight:bold;
+}
+
+.progress-wrap{
+    height:13px;
+    background:#dae8d8;
+}
+
+.progress{
+    width:0%;
+    height:100%;
+    background:#ffd644;
+    transition:.5s;
+}
+
+/* ================================
+   SCREEN
+================================ */
+
+.screen{
+    display:none;
+    padding:25px 15px 70px;
+    max-width:1100px;
+    margin:auto;
+}
+
+.screen.active{
+    display:block;
+}
+
+.panel{
+    background:rgba(255,255,255,.94);
+    border:5px solid #326b34;
+    border-radius:28px;
+    padding:25px;
+    box-shadow:0 15px 35px rgba(0,0,0,.22);
+}
+
+.title{
+    text-align:center;
+    color:#24652c;
+    font-size:30px;
+    font-weight:900;
+    margin-bottom:8px;
+}
+
+.subtitle{
+    text-align:center;
+    font-size:18px;
+    line-height:1.5;
+    margin-bottom:20px;
+}
+
+/* ================================
+ INTRO
+================================ */
+
+.intro-character{
+    text-align:center;
+    font-size:100px;
+    margin:10px 0;
+}
+
+.story-box{
+    max-width:720px;
+    margin:15px auto;
+    background:#f3ffe9;
+    border:3px dashed #58a44e;
+    padding:20px;
+    border-radius:20px;
+    text-align:center;
+    font-size:18px;
+    line-height:1.7;
+}
+
+.main-btn{
+    display:block;
+    margin:20px auto 5px;
+    min-width:220px;
+    padding:15px 25px;
+    border:0;
+    border-radius:40px;
+    font-size:20px;
+    font-weight:900;
+    cursor:pointer;
+    background:#ffb41f;
+    color:#3d3100;
+    box-shadow:0 6px 0 #bd7c00;
+}
+
+.main-btn:active{
+    transform:translateY(4px);
+    box-shadow:0 2px 0 #bd7c00;
+}
+
+/* ================================
+ MAZE
+================================ */
+
+.maze-game{
+    position:relative;
+    max-width:780px;
+    margin:auto;
+    border:10px solid #235426;
+    border-radius:20px;
+    overflow:hidden;
+    background:#b89058;
+    box-shadow:inset 0 0 30px rgba(0,0,0,.3);
+}
+
+/* 13 x 9 maze */
+
+#maze{
+    position:relative;
+    display:grid;
+    grid-template-columns:repeat(13,1fr);
+    aspect-ratio:13/9;
+    background:#d5b580;
+}
+
+.cell{
+    position:relative;
+}
+
+.wall{
+    background:
+        repeating-linear-gradient(
+            45deg,
+            #1e672a,
+            #1e672a 7px,
+            #277b34 7px,
+            #277b34 14px
+        );
+    box-shadow:inset 0 0 7px rgba(0,0,0,.3);
+}
+
+.path{
+    background:
+        radial-gradient(circle,#cfad74 10%,transparent 11%),
+        #debF88;
+    background-size:16px 16px;
+}
+
+.goal{
+    background:#f8dd6e !important;
+}
+
+.checkpoint{
+    font-size:clamp(19px,4vw,35px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.player{
+    position:absolute;
+    z-index:10;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:clamp(23px,4vw,39px);
+    transition:left .17s,top .17s;
+    filter:drop-shadow(0 3px 2px rgba(0,0,0,.3));
+}
+
+.player.walk{
+    animation:walk .18s infinite alternate;
+}
+
+@keyframes walk{
+    from{transform:translateY(0) rotate(-3deg)}
+    to{transform:translateY(-4px) rotate(3deg)}
+}
+
+.maze-label{
+    position:absolute;
+    z-index:8;
+    background:#fff;
+    padding:4px 8px;
+    font-size:11px;
+    font-weight:bold;
+    border-radius:10px;
+    pointer-events:none;
+}
+
+/* controls */
+
+.controls{
+    display:grid;
+    grid-template-columns:60px 60px 60px;
+    grid-template-areas:
+    ". up ."
+    "left down right";
+    gap:7px;
+    justify-content:center;
+    margin:18px auto 0;
+}
+
+.move-btn{
+    width:60px;
+    height:55px;
+    border:0;
+    border-radius:16px;
+    background:#316e38;
+    color:white;
+    font-size:28px;
+    cursor:pointer;
+    box-shadow:0 4px 0 #17421c;
+}
+
+.move-btn:active{
+    transform:translateY(3px);
+    box-shadow:0 1px 0 #17421c;
+}
+
+.up{grid-area:up}
+.left{grid-area:left}
+.down{grid-area:down}
+.right{grid-area:right}
+
+/* ================================
+ MODAL
+================================ */
+
+.modal-backdrop{
+    position:absolute;
+    inset:0;
+    background:rgba(15,40,15,.75);
+    z-index:50;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:15px;
+}
+
+.modal-backdrop.show{
+    display:flex;
+}
+
+.quiz-card{
+    max-width:580px;
+    width:100%;
+    background:#fff;
+    border:6px solid #ffcd39;
+    border-radius:25px;
+    padding:22px;
+    text-align:center;
+}
+
+.quiz-card h3{
+    font-size:25px;
+    color:#31743b;
+}
+
+.quiz-foods{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:12px;
+    margin-top:20px;
+}
+
+.quiz-food{
+    background:#f9fff5;
+    border:3px solid #aad69f;
+    border-radius:20px;
+    padding:12px;
+    cursor:pointer;
+    font-weight:bold;
+    min-height:120px;
+}
+
+.quiz-food:hover{
+    border-color:#ffac18;
+}
+
+.quiz-food .emoji{
+    display:block;
+    font-size:48px;
+}
+
+/* ================================
+ TRANSITION
+================================ */
+
+.transition-screen{
+    text-align:center;
+}
+
+.big-character{
+    font-size:110px;
+    margin:20px;
+}
+
+.path-map{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+    flex-wrap:wrap;
+    margin:30px 0;
+}
+
+.map-node{
+    background:#e8f5e9;
+    border:3px solid #59a461;
+    border-radius:50%;
+    width:70px;
+    height:70px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:30px;
+}
+
+.map-arrow{
+    font-size:25px;
+}
+
+/* ================================
+ LEVEL 2
+================================ */
+
+.restaurant{
+    position:relative;
+    border-radius:25px;
+    padding:25px;
+    background:
+        linear-gradient(90deg,rgba(255,255,255,.13) 1px,transparent 1px),
+        linear-gradient(rgba(255,255,255,.13) 1px,transparent 1px),
+        #e6cc96;
+    background-size:35px 35px;
+}
+
+.person-area{
+    text-align:center;
+    position:relative;
+}
+
+.person-head{
+    position:relative;
+    width:280px;
+    height:330px;
+    margin:10px auto;
+}
+
+/* hair */
+.hair{
+    position:absolute;
+    width:220px;
+    height:170px;
+    left:30px;
+    top:0;
+    background:#35281d;
+    border-radius:50% 50% 40% 40%;
+}
+
+/* face */
+.face{
+    position:absolute;
+    left:45px;
+    top:55px;
+    width:190px;
+    height:240px;
+    background:#f4bd82;
+    border-radius:45% 45% 48% 48%;
+    border:4px solid #c48650;
+}
+
+.eye{
+    position:absolute;
+    top:80px;
+    width:25px;
+    height:18px;
+    background:#fff;
+    border-radius:50%;
+}
+
+.eye::after{
+    content:"";
+    position:absolute;
+    width:10px;
+    height:10px;
+    background:#35281d;
+    border-radius:50%;
+    top:4px;
+    left:8px;
+}
+
+.eye.left-eye{left:38px}
+.eye.right-eye{right:38px}
+
+.nose{
+    position:absolute;
+    left:82px;
+    top:105px;
+    width:24px;
+    height:38px;
+    border-right:3px solid #b97949;
+    border-bottom:3px solid #b97949;
+    border-radius:50%;
+}
+
+.mouth-target{
+    position:absolute;
+    left:50%;
+    transform:translateX(-50%);
+    bottom:38px;
+    width:92px;
+    height:55px;
+    border-radius:15px 15px 50% 50%;
+    background:#7d1c21;
+    border:5px solid #e05a61;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:13px;
+    font-weight:bold;
+}
+
+.mouth-target.drag-over{
+    transform:translateX(-50%) scale(1.18);
+    outline:7px solid rgba(255,215,0,.5);
+}
+
+.food-table{
+    background:#956536;
+    padding:18px;
+    border-radius:20px;
+    margin-top:15px;
+}
+
+.food-table h3{
+    color:white;
+    text-align:center;
+    margin-bottom:15px;
+}
+
+.food-items{
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:10px;
+}
+
+.drag-food{
+    background:#fff;
+    border:3px solid #dedede;
+    border-radius:18px;
+    min-height:100px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    cursor:grab;
+    padding:8px;
+    font-size:14px;
+    font-weight:bold;
+    touch-action:none;
+}
+
+.drag-food span{
+    font-size:45px;
+}
+
+.drag-food.used{
+    opacity:.25;
+    pointer-events:none;
+}
+
+.drag-food.selected{
+    border-color:#ffb300;
+    background:#fff5ca;
+}
+
+/* ================================
+ LEVEL 3
+================================ */
+
+.sort-zone{
+    background:#d7ba80;
+    border-radius:25px;
+    padding:20px;
+}
+
+.sort-foods{
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:10px;
+    margin-bottom:25px;
+}
+
+.sort-food{
+    background:#fff;
+    border:3px solid #ddd;
+    border-radius:18px;
+    padding:10px;
+    text-align:center;
+    cursor:grab;
+    touch-action:none;
+}
+
+.sort-food .emoji{
+    font-size:45px;
+}
+
+.sort-food.used{
+    opacity:.25;
+    pointer-events:none;
+}
+
+.sort-food.selected{
+    border-color:#ff9e00;
+    background:#fff4c2;
+}
+
+.drop-zones{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+}
+
+.drop-zone{
+    min-height:220px;
+    border:5px dashed #fff;
+    border-radius:25px;
+    padding:18px;
+    text-align:center;
+    transition:.2s;
+}
+
+.drop-zone.healthy{
+    background:#90cf85;
+}
+
+.drop-zone.unhealthy{
+    background:#e7a078;
+}
+
+.drop-zone.drag-over{
+    transform:scale(1.025);
+    outline:7px solid rgba(255,255,255,.45);
+}
+
+.drop-zone h3{
+    font-size:23px;
+    margin-bottom:12px;
+}
+
+.dropped-items{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:10px;
+}
+
+.dropped-item{
+    background:white;
+    border-radius:13px;
+    padding:8px;
+    font-size:30px;
+}
+
+/* ================================
+ FEEDBACK
+================================ */
+
+.feedback{
+    position:fixed;
+    left:50%;
+    top:45%;
+    transform:translate(-50%,-50%) scale(.8);
+    background:#fff;
+    border:5px solid #5aa054;
+    border-radius:25px;
+    padding:25px;
+    z-index:999;
+    min-width:280px;
+    max-width:90%;
+    text-align:center;
+    font-size:23px;
+    font-weight:bold;
+    box-shadow:0 15px 50px rgba(0,0,0,.35);
+    visibility:hidden;
+    opacity:0;
+    transition:.2s;
+}
+
+.feedback.show{
+    visibility:visible;
+    opacity:1;
+    transform:translate(-50%,-50%) scale(1);
+}
+
+.feedback.wrong{
+    border-color:#d84b47;
+}
+
+/* ================================
+ WIN
+================================ */
+
+.trophy{
+    font-size:120px;
+    text-align:center;
+    animation:trophy 1s infinite alternate;
+}
+
+@keyframes trophy{
+    to{transform:translateY(-12px) rotate(4deg)}
+}
+
+.result{
+    background:#f0ffe9;
+    border-radius:20px;
+    max-width:500px;
+    margin:20px auto;
+    padding:20px;
+    text-align:center;
+    font-size:20px;
+}
+
+/* Mobile */
+
+@media(max-width:720px){
+
+    .food-items,
+    .sort-foods{
+        grid-template-columns:repeat(3,1fr);
+    }
+
+    .drop-zones{
+        grid-template-columns:1fr;
+    }
+
+    .quiz-foods{
+        grid-template-columns:1fr;
+    }
+
+    .quiz-food{
+        min-height:auto;
+    }
+
+    .game-title{
+        font-size:19px;
+    }
+
+    .panel{
+        padding:14px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header class="game-header">
+    <div class="game-title">
+        💪 BADAN KUAT! PILIH KHASIAT
+    </div>
+
+    <div class="game-status">
+        <div class="status">
+            ❤️ <span id="livesText">❤️❤️❤️</span>
+        </div>
+
+        <div class="status">
+            ⭐ <span id="scoreText">0</span>
+        </div>
+
+        <div class="status">
+            🗺️ <span id="stageText">Mula</span>
+        </div>
+    </div>
+</header>
+
+<div class="progress-wrap">
+    <div class="progress" id="progress"></div>
+</div>
+
+<!-- =====================================
+ INTRO
+===================================== -->
+
+<section class="screen active" id="intro">
+
+<div class="panel">
+
+    <h1 class="title">
+        🌿 Pengembaraan Badan Kuat
+    </h1>
+
+    <p class="subtitle">
+        Jelajah labirin dan bantu Badan Kuat
+        memilih makanan yang berkhasiat!
+    </p>
+
+    <div class="intro-character">
+        🧒🎒
+    </div>
+
+    <div class="story-box">
+
+        <strong>MISI KAMU</strong>
+
+        <br><br>
+
+        Badan Kuat perlu mencari jalan keluar
+        daripada Labirin Khasiat.
+
+        <br><br>
+
+        Sepanjang perjalanan,
+        kamu akan menemui pelbagai cabaran makanan.
+
+        <br><br>
+
+        🍎 Pilih makanan berkhasiat.
+
+        <br>
+
+        🍟 Elakkan makanan kurang sihat.
+
+        <br><br>
+
+        Kamu mempunyai
+
+        <strong>3 NYAWA ❤️❤️❤️</strong>
+
+    </div>
+
+    <button
+        type="button"
+        class="main-btn"
+        id="startBtn">
+
+        ▶ MULAKAN MISI
+
+    </button>
+
+</div>
+
+</section>
+
+
+<!-- =====================================
+ LEVEL 1
+===================================== -->
+
+<section class="screen" id="level1">
+
+<div class="panel">
+
+    <h2 class="title">
+        🧩 BABAK 1
+        <br>
+        Labirin Khasiat
+    </h2>
+
+    <p class="subtitle">
+
+        Gerakkan watak melalui labirin.
+
+        <br>
+
+        Pergi ke setiap makanan untuk membuka laluan.
+
+        <br>
+
+        Gunakan butang arah atau papan kekunci
+        <strong>↑ ↓ ← →</strong>.
+
+    </p>
+
+
+    <div class="maze-game">
+
+        <div id="maze"></div>
+
+        <div
+            class="player"
+            id="player">
+
+            🧒
+
+        </div>
+
+
+        <!-- Quiz overlay -->
+
+        <div
+            class="modal-backdrop"
+            id="mazeModal">
+
+            <div class="quiz-card">
+
+                <h3>
+                    🍽️ Pilih makanan berkhasiat!
+                </h3>
+
+                <p style="margin-top:8px">
+                    Pilihan yang betul akan membuka jalan.
+                </p>
+
+                <div
+                    class="quiz-foods"
+                    id="quizFoods">
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="controls">
+
+        <button
+            type="button"
+            class="move-btn up"
+            data-direction="up">
+            ▲
+        </button>
+
+        <button
+            type="button"
+            class="move-btn left"
+            data-direction="left">
+            ◀
+        </button>
+
+        <button
+            type="button"
+            class="move-btn down"
+            data-direction="down">
+            ▼
+        </button>
+
+        <button
+            type="button"
+            class="move-btn right"
+            data-direction="right">
+            ▶
+        </button>
+
+    </div>
+
+</div>
+
+</section>
+
+
+<!-- =====================================
+ TRANSITION 1
+===================================== -->
+
+<section class="screen" id="transition2">
+
+<div class="panel transition-screen">
+
+    <h2 class="title">
+        🎉 Hebat!
+    </h2>
+
+    <div class="big-character">
+        🧒🚶
+    </div>
+
+    <p class="subtitle">
+
+        Kamu berjaya keluar daripada
+        <strong>Labirin Khasiat!</strong>
+
+        <br><br>
+
+        Sekarang ikut laluan menuju
+        <strong>Rumah Badan Kuat</strong>.
+
+    </p>
+
+
+    <div class="path-map">
+
+        <div class="map-node">🌳</div>
+
+        <div class="map-arrow">➡️</div>
+
+        <div class="map-node">🧒</div>
+
+        <div class="map-arrow">➡️</div>
+
+        <div class="map-node">🌉</div>
+
+        <div class="map-arrow">➡️</div>
+
+        <div class="map-node">🏠</div>
+
+    </div>
+
+
+    <button
+        type="button"
+        class="main-btn"
+        id="goLevel2">
+
+        🚶 TERUSKAN PERJALANAN
+
+    </button>
+
+</div>
+
+</section>
+
+
+<!-- =====================================
+ LEVEL 2
+===================================== -->
+
+<section class="screen" id="level2">
+
+<div class="panel">
+
+    <h2 class="title">
+
+        👄 BABAK 2
+
+        <br>
+
+        Suap Badan Kuat!
+
+    </h2>
+
+    <p class="subtitle">
+
+        Badan Kuat sedang lapar.
+
+        <br>
+
+        <strong>
+            Seret makanan berkhasiat ke dalam mulut.
+        </strong>
+
+        <br><br>
+
+        💡 Jika menggunakan telefon,
+        tekan makanan dahulu kemudian tekan mulut.
+
+    </p>
+
+
+    <div class="restaurant">
+
+
+        <div class="person-area">
+
+
+            <div class="person-head">
+
+
+                <div class="hair"></div>
+
+
+                <div class="face">
+
+                    <div class="eye left-eye"></div>
+
+                    <div class="eye right-eye"></div>
+
+                    <div class="nose"></div>
+
+
+                    <div
+                        class="mouth-target"
+                        id="mouthTarget">
+
+                        SERET
+                        <br>
+                        KE SINI
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div style="font-size:18px;font-weight:bold">
+
+                Makanan berkhasiat:
+
+                <span id="feedCount">
+                    0
+                </span>
+
+                / 3
+
+            </div>
+
+        </div>
+
+
+        <div class="food-table">
+
+            <h3>
+                🍽️ PILIH MAKANAN
+            </h3>
+
+            <div
+                class="food-items"
+                id="foodTray">
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</section>
+
+
+<!-- =====================================
+ TRANSITION 2
+===================================== -->
+
+<section class="screen" id="transition3">
+
+<div class="panel transition-screen">
+
+    <h2 class="title">
+        💪 Badan Semakin Kuat!
+    </h2>
+
+    <div class="big-character">
+        🧒✨
+    </div>
+
+    <p class="subtitle">
+
+        Bagus!
+
+        <br>
+
+        Kamu telah memberikan makanan
+        yang baik kepada Badan Kuat.
+
+        <br><br>
+
+        Sekarang ada satu cabaran terakhir!
+
+    </p>
+
+
+    <div class="path-map">
+
+        <div class="map-node">🏠</div>
+
+        <div class="map-arrow">➡️</div>
+
+        <div class="map-node">🌳</div>
+
+        <div class="map-arrow">➡️</div>
+
+        <div class="map-node">🧒</div>
+
+        <div class="map-arrow">➡️</div>
+
+        <div class="map-node">🏆</div>
+
+    </div>
+
+
+    <button
+        type="button"
+        class="main-btn"
+        id="goLevel3">
+
+        🏆 PERGI KE CABARAN AKHIR
+
+    </button>
+
+</div>
+
+</section>
+
+
+<!-- =====================================
+ LEVEL 3
+===================================== -->
+
+<section class="screen" id="level3">
+
+<div class="panel">
+
+    <h2 class="title">
+
+        🧠 BABAK 3
+
+        <br>
+
+        Padankan Makanan
+
+    </h2>
+
+    <p class="subtitle">
+
+        Seret setiap makanan ke kumpulan yang betul.
+
+        <br><br>
+
+        🥗 <strong>Berkhasiat</strong>
+
+        atau
+
+        🍔 <strong>Kurang Sihat</strong>
+
+    </p>
+
+
+    <div class="sort-zone">
+
+
+        <div
+            class="sort-foods"
+            id="sortFoods">
+        </div>
+
+
+        <div class="drop-zones">
+
+
+            <div
+                class="drop-zone healthy"
+                data-category="healthy">
+
+                <h3>
+                    🥗 MAKANAN
+                    <br>
+                    BERKHASIAT
+                </h3>
+
+                <div
+                    class="dropped-items"
+                    id="healthyDrop">
+                </div>
+
+            </div>
+
+
+            <div
+                class="drop-zone unhealthy"
+                data-category="unhealthy">
+
+                <h3>
+                    🍔 MAKANAN
+                    <br>
+                    KURANG SIHAT
+                </h3>
+
+                <div
+                    class="dropped-items"
+                    id="unhealthyDrop">
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+</div>
+
+</section>
+
+
+<!-- =====================================
+ WIN
+===================================== -->
+
+<section class="screen" id="win">
+
+<div class="panel">
+
+    <div class="trophy">
+        🏆
+    </div>
+
+    <h1 class="title">
+        TAHNIAH!
+    </h1>
+
+    <p class="subtitle">
+
+        Kamu berjaya menamatkan
+
+        <strong>
+            Pengembaraan Badan Kuat!
+        </strong>
+
+    </p>
+
+
+    <div class="result">
+
+        ⭐ Markah Akhir
+
+        <h1 id="finalScore">
+            0
+        </h1>
+
+        <br>
+
+        ❤️ Nyawa Baki
+
+        <h2 id="finalLives">
+            ❤️❤️❤️
+        </h2>
+
+        <br>
+
+        <strong>
+            🍎🥦🍌
+            <br>
+            Pilih makanan berkhasiat untuk
+            badan yang sihat dan kuat!
+        </strong>
+
+    </div>
+
+
+    <button
+        type="button"
+        class="main-btn"
+        id="restartBtn">
+
+        🔄 MAIN SEMULA
+
+    </button>
+
+</div>
+
+</section>
+
+
+<!-- GAME OVER -->
+
+<section class="screen" id="gameOver">
+
+<div class="panel">
+
+    <div class="big-character"
+         style="text-align:center">
+
+        😢
+
+    </div>
+
+    <h2 class="title">
+        Nyawa Sudah Habis
+    </h2>
+
+    <p class="subtitle">
+
+        Tidak mengapa!
+
+        <br>
+
+        Kita belajar daripada kesilapan.
+
+        <br><br>
+
+        Cuba sekali lagi dan ingat:
+
+        <strong>
+            🍎 buah dan 🥦 sayur
+            membantu badan menjadi kuat.
+        </strong>
+
+    </p>
+
+    <button
+        type="button"
+        class="main-btn"
+        id="tryAgainBtn">
+
+        🔄 CUBA LAGI
+
+    </button>
+
+</div>
+
+</section>
+
+
+<div
+    class="feedback"
+    id="feedback"
+    aria-live="polite">
+</div>
+
+
+<script>
+
+/* =================================
+   GENERAL GAME STATE
+================================= */
+
+const screens =
+document.querySelectorAll(".screen");
+
+const livesText =
+document.getElementById("livesText");
+
+const scoreText =
+document.getElementById("scoreText");
+
+const stageText =
+document.getElementById("stageText");
+
+const progress =
+document.getElementById("progress");
+
+const feedbackBox =
+document.getElementById("feedback");
+
+
+let lives = 3;
+let score = 0;
+
+
+/* =================================
+ SHOW SCREEN
+================================= */
+
+function showScreen(id){
+
+    screens.forEach(screen=>{
+        screen.classList.remove("active");
+    });
+
+    document
+    .getElementById(id)
+    .classList.add("active");
+
+    window.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
+}
+
+
+/* =================================
+ STATUS
+================================= */
+
+function updateStatus(){
+
+    livesText.textContent =
+    lives > 0
+    ? "❤️".repeat(lives)
+    : "💔";
+
+    scoreText.textContent =
+    score;
+}
+
+
+function setStage(text,value){
+
+    stageText.textContent = text;
+
+    progress.style.width =
+    value + "%";
+}
+
+
+/* =================================
+ FEEDBACK
+================================= */
+
+let feedbackTimer;
+
+function showFeedback(text,type="correct"){
+
+    clearTimeout(feedbackTimer);
+
+    feedbackBox.innerHTML = text;
+
+    feedbackBox.className =
+    "feedback show " +
+    (type === "wrong" ? "wrong" : "");
+
+    feedbackTimer =
+    setTimeout(()=>{
+
+        feedbackBox.className =
+        "feedback";
+
+    },1100);
+}
+
+
+/* =================================
+ LOSE LIFE
+================================= */
+
+function loseLife(){
+
+    lives--;
+
+    updateStatus();
+
+    if(lives <= 0){
+
+        setTimeout(()=>{
+
+            showScreen("gameOver");
+
+            setStage(
+                "Permainan Tamat",
+                0
+            );
+
+        },800);
+
+        return true;
+    }
+
+    return false;
+}
+
+
+/* =================================
+ START
+================================= */
+
+document
+.getElementById("startBtn")
+.addEventListener("click",()=>{
+
+    showScreen("level1");
+
+    setStage(
+        "Babak 1",
+        10
+    );
+
+    createMaze();
+
+});
+
+
+/* =================================
+ MAZE DATA
+================================= */
+
+/*
+
+0 = PATH
+1 = WALL
+2 = CHECKPOINT
+3 = FINISH
+
+*/
+
+const mazeMap = [
+
+[0,1,1,1,1,1,1,1,1,1,1,1,1],
+
+[0,0,0,0,1,0,0,0,0,0,0,0,1],
+
+[1,1,1,0,1,0,1,1,1,1,1,0,1],
+
+[1,2,0,0,0,0,1,0,0,0,0,0,1],
+
+[1,1,1,1,1,0,1,0,1,1,1,1,1],
+
+[1,0,0,0,0,0,0,0,0,2,0,0,1],
+
+[1,0,1,1,1,1,1,1,1,1,1,0,1],
+
+[1,0,0,0,2,0,0,0,0,0,0,3,1],
+
+[1,1,1,1,1,1,1,1,1,1,1,1,1]
+
+];
+
+
+const mazeQuestions = [
+
+[
+    {
+        emoji:"🍎",
+        name:"Epal",
+        healthy:true
+    },
+
+    {
+        emoji:"🍩",
+        name:"Donat",
+        healthy:false
+    },
+
+    {
+        emoji:"🍬",
+        name:"Gula-gula",
+        healthy:false
+    }
+],
+
+[
+    {
+        emoji:"🥦",
+        name:"Brokoli",
+        healthy:true
+    },
+
+    {
+        emoji:"🍟",
+        name:"Kentang Goreng",
+        healthy:false
+    },
+
+    {
+        emoji:"🍫",
+        name:"Coklat",
+        healthy:false
+    }
+],
+
+[
+    {
+        emoji:"🍌",
+        name:"Pisang",
+        healthy:true
+    },
+
+    {
+        emoji:"🍔",
+        name:"Burger",
+        healthy:false
+    },
+
+    {
+        emoji:"🥤",
+        name:"Minuman Manis",
+        healthy:false
+    }
+]
+
+];
+
+
+const checkpointCoordinates = [
+
+    {row:3,col:1},
+
+    {row:5,col:9},
+
+    {row:7,col:4}
+
+];
+
+
+let playerPosition = {
+    row:0,
+    col:0
+};
+
+let completedCheckpoints =
+new Set();
+
+let currentCheckpoint = null;
+
+let quizActive = false;
+
+
+/* =================================
+ CREATE MAZE
+================================= */
+
+function createMaze(){
+
+    const maze =
+    document.getElementById("maze");
+
+    maze.innerHTML = "";
+
+
+    mazeMap.forEach((row,r)=>{
+
+        row.forEach((cell,c)=>{
+
+            const div =
+            document.createElement("div");
+
+            div.className =
+            "cell " +
+            (cell === 1
+            ? "wall"
+            : "path");
+
+
+            if(cell === 2){
+
+                div.classList.add(
+                    "checkpoint"
+                );
+
+                div.textContent =
+                "🍽️";
+            }
+
+
+            if(cell === 3){
+
+                div.classList.add(
+                    "goal",
+                    "checkpoint"
+                );
+
+                div.textContent =
+                "🏁";
+            }
+
+
+            maze.appendChild(div);
+
+        });
+
+    });
+
+
+    updatePlayerPosition();
+
+}
+
+
+/* =================================
+ PLAYER POSITION
+================================= */
+
+function updatePlayerPosition(){
+
+    const player =
+    document.getElementById("player");
+
+    const cols = 13;
+    const rows = 9;
+
+    player.style.width =
+    (100 / cols) + "%";
+
+    player.style.height =
+    (100 / rows) + "%";
+
+    player.style.left =
+    (
+        playerPosition.col *
+        (100 / cols)
+    ) + "%";
+
+    player.style.top =
+    (
+        playerPosition.row *
+        (100 / rows)
+    ) + "%";
+}
+
+
+/* =================================
+ MOVE
+================================= */
+
+function movePlayer(direction){
+
+    if(quizActive){
+        return;
+    }
+
+    let newRow =
+    playerPosition.row;
+
+    let newCol =
+    playerPosition.col;
+
+
+    if(direction === "up")
+        newRow--;
+
+    if(direction === "down")
+        newRow++;
+
+    if(direction === "left")
+        newCol--;
+
+    if(direction === "right")
+        newCol++;
+
+
+    if(
+        newRow < 0 ||
+        newCol < 0 ||
+        newRow >= mazeMap.length ||
+        newCol >= mazeMap[0].length
+    ){
+        return;
+    }
+
+
+    if(
+        mazeMap[newRow][newCol] === 1
+    ){
+
+        showFeedback(
+            "🌳 Jalan tertutup!<br>Cari laluan lain.",
+            "wrong"
+        );
+
+        return;
+    }
+
+
+    playerPosition = {
+        row:newRow,
+        col:newCol
+    };
+
+
+    const player =
+    document.getElementById("player");
+
+    player.classList.add("walk");
+
+    updatePlayerPosition();
+
+
+    setTimeout(()=>{
+
+        player.classList.remove("walk");
+
+    },200);
+
+
+    checkMazePosition();
+}
+
+
+/* Direction buttons */
+
+document
+.querySelectorAll(".move-btn")
+.forEach(button=>{
+
+    button.addEventListener(
+        "click",
+        ()=>{
+
+            movePlayer(
+                button.dataset.direction
+            );
+
+        }
+    );
+
+});
+
+
+/* Keyboard */
+
+document.addEventListener(
+"keydown",
+event=>{
+
+    const map = {
+
+        ArrowUp:"up",
+
+        ArrowDown:"down",
+
+        ArrowLeft:"left",
+
+        ArrowRight:"right"
+
+    };
+
+    if(
+        map[event.key] &&
+        document
+        .getElementById("level1")
+        .classList
+        .contains("active")
+    ){
+
+        event.preventDefault();
+
+        movePlayer(
+            map[event.key]
+        );
+    }
+
+});
+
+
+/* =================================
+ CHECK MAZE POSITION
+================================= */
+
+function checkMazePosition(){
+
+    const checkpointIndex =
+    checkpointCoordinates
+    .findIndex(point=>
+
+        point.row ===
+        playerPosition.row
+
+        &&
+
+        point.col ===
+        playerPosition.col
+
+    );
+
+
+    if(
+        checkpointIndex !== -1 &&
+        !completedCheckpoints
+        .has(checkpointIndex)
+    ){
+
+        openMazeQuiz(
+            checkpointIndex
+        );
+
+        return;
+    }
+
+
+    if(
+        mazeMap
+        [playerPosition.row]
+        [playerPosition.col]
+        === 3
+    ){
+
+        if(
+            completedCheckpoints.size
+            < 3
+        ){
+
+            showFeedback(
+                "🔒 Belum boleh keluar!<br>Selesaikan semua cabaran makanan dahulu.",
+                "wrong"
+            );
+
+            return;
+        }
+
+
+        score += 20;
+
+        updateStatus();
+
+        setStage(
+            "Menuju Babak 2",
+            35
+        );
+
+
+        setTimeout(()=>{
+
+            showScreen(
+                "transition2"
+            );
+
+        },600);
+
+    }
+}
+
+
+/* =================================
+ MAZE QUIZ
+================================= */
+
+function openMazeQuiz(index){
+
+    quizActive = true;
+
+    currentCheckpoint =
+    index;
+
+
+    const modal =
+    document.getElementById(
+        "mazeModal"
+    );
+
+    const container =
+    document.getElementById(
+        "quizFoods"
+    );
+
+
+    container.innerHTML = "";
+
+
+    const foods =
+    [...mazeQuestions[index]]
+    .sort(
+        ()=>Math.random()-.5
+    );
+
+
+    foods.forEach(food=>{
+
+        const button =
+        document.createElement(
+            "button"
+        );
+
+        button.type =
+        "button";
+
+        button.className =
+        "quiz-food";
+
+        button.innerHTML =
+
+        `<span class="emoji">
+            ${food.emoji}
+        </span>
+
+        ${food.name}`;
+
+
+        button.addEventListener(
+            "click",
+            ()=>checkMazeFood(
+                food
+            )
+        );
+
+
+        container.appendChild(
+            button
+        );
+
+    });
+
+
+    modal.classList.add(
+        "show"
+    );
+}
+
+
+/* =================================
+ CHECK QUIZ FOOD
+================================= */
+
+function checkMazeFood(food){
+
+    if(food.healthy){
+
+        score += 15;
+
+        completedCheckpoints
+        .add(currentCheckpoint);
+
+        updateStatus();
+
+
+        document
+        .getElementById(
+            "mazeModal"
+        )
+        .classList
+        .remove("show");
+
+
+        quizActive = false;
+
+
+        showFeedback(
+
+            "✅ BETUL!<br>" +
+            food.emoji +
+            " " +
+            food.name +
+            " berkhasiat!"
+
+        );
+
+
+        setStage(
+            "Babak 1",
+            12 +
+            completedCheckpoints.size
+            * 6
+        );
+
+    }
+
+    else{
+
+        showFeedback(
+
+            "❌ Oops!<br>" +
+            food.name +
+            " bukan pilihan terbaik.<br>❤️ -1",
+
+            "wrong"
+
+        );
+
+
+        loseLife();
+
+    }
+
+}
+
+
+/* =================================
+ GO LEVEL 2
+================================= */
+
+document
+.getElementById("goLevel2")
+.addEventListener(
+"click",
+()=>{
+
+    showScreen("level2");
+
+    setStage(
+        "Babak 2",
+        45
+    );
+
+    createFoodTray();
+
+});
+
+
+/* =================================
+ LEVEL 2 DATA
+================================= */
+
+const feedFoods = [
+
+{
+    id:"apple",
+    emoji:"🍎",
+    name:"Epal",
+    healthy:true
+},
+
+{
+    id:"broccoli",
+    emoji:"🥦",
+    name:"Brokoli",
+    healthy:true
+},
+
+{
+    id:"banana",
+    emoji:"🍌",
+    name:"Pisang",
+    healthy:true
+},
+
+{
+    id:"donut",
+    emoji:"🍩",
+    name:"Donat",
+    healthy:false
+},
+
+{
+    id:"fries",
+    emoji:"🍟",
+    name:"Kentang Goreng",
+    healthy:false
+},
+
+{
+    id:"candy",
+    emoji:"🍬",
+    name:"Gula-gula",
+    healthy:false
+}
+
+];
+
+
+let feedCount = 0;
+let selectedFeedFood = null;
+
+
+/* =================================
+ CREATE FOOD TRAY
+================================= */
+
+function createFoodTray(){
+
+    const tray =
+    document.getElementById(
+        "foodTray"
+    );
+
+    tray.innerHTML = "";
+
+    feedCount = 0;
+
+    selectedFeedFood = null;
+
+    document
+    .getElementById("feedCount")
+    .textContent = "0";
+
+
+    [...feedFoods]
+    .sort(()=>Math.random()-.5)
+    .forEach(food=>{
+
+        const item =
+        document.createElement(
+            "div"
+        );
+
+        item.className =
+        "drag-food";
+
+        item.draggable =
+        true;
+
+        item.dataset.id =
+        food.id;
+
+        item.innerHTML =
+
+        `<span>
+            ${food.emoji}
+        </span>
+
+        ${food.name}`;
+
+
+        item.addEventListener(
+            "dragstart",
+            ()=>{
+
+                selectedFeedFood =
+                food;
+
+            }
+        );
+
+
+        /* Tap alternative */
+
+        item.addEventListener(
+            "click",
+            ()=>{
+
+                document
+                .querySelectorAll(
+                    ".drag-food"
+                )
+                .forEach(el=>
+                    el.classList
+                    .remove("selected")
+                );
+
+                item.classList.add(
+                    "selected"
+                );
+
+                selectedFeedFood =
+                food;
+
+            }
+        );
+
+
+        tray.appendChild(item);
+
+    });
+
+}
+
+
+/* =================================
+ MOUTH DROP
+================================= */
+
+const mouth =
+document.getElementById(
+    "mouthTarget"
+);
+
+
+mouth.addEventListener(
+"dragover",
+event=>{
+
+    event.preventDefault();
+
+    mouth.classList.add(
+        "drag-over"
+    );
+
+});
+
+
+mouth.addEventListener(
+"dragleave",
+()=>{
+
+    mouth.classList.remove(
+        "drag-over"
+    );
+
+});
+
+
+mouth.addEventListener(
+"drop",
+event=>{
+
+    event.preventDefault();
+
+    mouth.classList.remove(
+        "drag-over"
+    );
+
+    feedSelectedFood();
+
+});
+
+
+/* mobile tap alternative */
+
+mouth.addEventListener(
+"click",
+()=>{
+
+    if(selectedFeedFood){
+
+        feedSelectedFood();
+
+    }
+
+});
+
+
+function feedSelectedFood(){
+
+    if(!selectedFeedFood)
+        return;
+
+
+    const food =
+    selectedFeedFood;
+
+
+    const element =
+    document.querySelector(
+
+        `.drag-food[data-id="${food.id}"]`
+
+    );
+
+
+    if(
+        element &&
+        element.classList
+        .contains("used")
+    ){
+        return;
+    }
+
+
+    if(food.healthy){
+
+        score += 15;
+
+        feedCount++;
+
+        updateStatus();
+
+
+        mouth.innerHTML =
+        food.emoji +
+        "<br>YUM!";
+
+
+        element.classList.add(
+            "used"
+        );
+
+
+        showFeedback(
+
+            "😋 SEDAP!<br>" +
+            food.name +
+            " membantu badan menjadi kuat!"
+
+        );
+
+
+        document
+        .getElementById(
+            "feedCount"
+        )
+        .textContent =
+        feedCount;
+
+
+        setStage(
+            "Babak 2",
+            45 + feedCount * 7
+        );
+
+
+        if(feedCount >= 3){
+
+            setTimeout(()=>{
+
+                showScreen(
+                    "transition3"
+                );
+
+                setStage(
+                    "Menuju Babak 3",
+                    68
+                );
+
+            },1200);
+
+        }
+
+    }
+
+    else{
+
+        score =
+        Math.max(
+            0,
+            score - 5
+        );
+
+
+        updateStatus();
+
+
+        mouth.innerHTML =
+        "😖<br>OH TIDAK!";
+
+
+        showFeedback(
+
+            "❌ " +
+            food.name +
+            " kurang sihat.<br>⭐ -5 markah",
+
+            "wrong"
+
+        );
+
+    }
+
+
+    selectedFeedFood =
+    null;
+
+
+    document
+    .querySelectorAll(
+        ".drag-food"
+    )
+    .forEach(el=>
+        el.classList
+        .remove("selected")
+    );
+
+}
+
+
+/* =================================
+ GO LEVEL 3
+================================= */
+
+document
+.getElementById("goLevel3")
+.addEventListener(
+"click",
+()=>{
+
+    showScreen("level3");
+
+    setStage(
+        "Babak 3",
+        72
+    );
+
+    createSortGame();
+
+});
+
+
+/* =================================
+ LEVEL 3 DATA
+================================= */
+
+const sortData = [
+
+{
+    id:"sapple",
+    emoji:"🍎",
+    name:"Epal",
+    type:"healthy"
+},
+
+{
+    id:"sbroccoli",
+    emoji:"🥦",
+    name:"Brokoli",
+    type:"healthy"
+},
+
+{
+    id:"segg",
+    emoji:"🥚",
+    name:"Telur",
+    type:"healthy"
+},
+
+{
+    id:"sburger",
+    emoji:"🍔",
+    name:"Burger",
+    type:"unhealthy"
+},
+
+{
+    id:"sdonut",
+    emoji:"🍩",
+    name:"Donat",
+    type:"unhealthy"
+},
+
+{
+    id:"ssoda",
+    emoji:"🥤",
+    name:"Minuman Manis",
+    type:"unhealthy"
+}
+
+];
+
+
+let selectedSortFood = null;
+let matchedCount = 0;
+
+
+/* =================================
+ CREATE SORT GAME
+================================= */
+
+function createSortGame(){
+
+    matchedCount = 0;
+
+    selectedSortFood =
+    null;
+
+
+    document
+    .getElementById(
+        "healthyDrop"
+    )
+    .innerHTML = "";
+
+
+    document
+    .getElementById(
+        "unhealthyDrop"
+    )
+    .innerHTML = "";
+
+
+    const container =
+    document.getElementById(
+        "sortFoods"
+    );
+
+
+    container.innerHTML = "";
+
+
+    [...sortData]
+    .sort(()=>Math.random()-.5)
+    .forEach(food=>{
+
+        const item =
+        document.createElement(
+            "div"
+        );
+
+
+        item.className =
+        "sort-food";
+
+
+        item.draggable =
+        true;
+
+
+        item.dataset.id =
+        food.id;
+
+
+        item.innerHTML =
+
+        `<div class="emoji">
+            ${food.emoji}
+        </div>
+
+        ${food.name}`;
+
+
+        item.addEventListener(
+            "dragstart",
+            ()=>{
+
+                selectedSortFood =
+                food;
+
+            }
+        );
+
+
+        /* tap alternative */
+
+        item.addEventListener(
+            "click",
+            ()=>{
+
+                document
+                .querySelectorAll(
+                    ".sort-food"
+                )
+                .forEach(el=>
+                    el.classList
+                    .remove("selected")
+                );
+
+
+                item.classList.add(
+                    "selected"
+                );
+
+
+                selectedSortFood =
+                food;
+
+            }
+        );
+
+
+        container.appendChild(
+            item
+        );
+
+    });
+
+}
+
+
+/* =================================
+ DROP ZONES
+================================= */
+
+document
+.querySelectorAll(".drop-zone")
+.forEach(zone=>{
+
+
+    zone.addEventListener(
+        "dragover",
+        event=>{
+
+            event.preventDefault();
+
+            zone.classList.add(
+                "drag-over"
+            );
+
+        }
+    );
+
+
+    zone.addEventListener(
+        "dragleave",
+        ()=>{
+
+            zone.classList.remove(
+                "drag-over"
+            );
+
+        }
+    );
+
+
+    zone.addEventListener(
+        "drop",
+        event=>{
+
+            event.preventDefault();
+
+            zone.classList.remove(
+                "drag-over"
+            );
+
+            sortFoodToZone(
+                zone.dataset.category
+            );
+
+        }
+    );
+
+
+    /* tap alternative */
+
+    zone.addEventListener(
+        "click",
+        ()=>{
+
+            if(selectedSortFood){
+
+                sortFoodToZone(
+                    zone.dataset.category
+                );
+
+            }
+
+        }
+    );
+
+});
+
+
+/* =================================
+ CHECK SORT
+================================= */
+
+function sortFoodToZone(category){
+
+    if(!selectedSortFood)
+        return;
+
+
+    const food =
+    selectedSortFood;
+
+
+    const original =
+    document.querySelector(
+
+        `.sort-food[data-id="${food.id}"]`
+
+    );
+
+
+    if(
+        original &&
+        original.classList
+        .contains("used")
+    ){
+        return;
+    }
+
+
+    if(food.type === category){
+
+        score += 10;
+
+        matchedCount++;
+
+        updateStatus();
+
+
+        original.classList.add(
+            "used"
+        );
+
+
+        const dropId =
+        category === "healthy"
+
+        ? "healthyDrop"
+
+        : "unhealthyDrop";
+
+
+        const dropped =
+        document.createElement(
+            "div"
+        );
+
+
+        dropped.className =
+        "dropped-item";
+
+
+        dropped.innerHTML =
+        food.emoji + " ✅";
+
+
+        document
+        .getElementById(dropId)
+        .appendChild(dropped);
+
+
+        showFeedback(
+
+            "✅ BETUL!<br>" +
+            food.name +
+            " dipadankan dengan tepat."
+
+        );
+
+
+        setStage(
+            "Babak 3",
+            72 +
+            (
+                matchedCount /
+                sortData.length
+            ) * 28
+        );
+
+
+        if(
+            matchedCount >=
+            sortData.length
+        ){
+
+            setTimeout(
+                winGame,
+                1100
+            );
+
+        }
+
+    }
+
+    else{
+
+        score =
+        Math.max(
+            0,
+            score - 5
+        );
+
+
+        updateStatus();
+
+
+        showFeedback(
+
+            "❌ Belum betul.<br>Cuba kumpulan yang satu lagi!<br>⭐ -5",
+
+            "wrong"
+
+        );
+
+    }
+
+
+    selectedSortFood =
+    null;
+
+
+    document
+    .querySelectorAll(
+        ".sort-food"
+    )
+    .forEach(el=>
+        el.classList
+        .remove("selected")
+    );
+
+}
+
+
+/* =================================
+ WIN
+================================= */
+
+function winGame(){
+
+    showScreen("win");
+
+    setStage(
+        "🏆 Selesai",
+        100
+    );
+
+
+    document
+    .getElementById(
+        "finalScore"
+    )
+    .textContent =
+    score;
+
+
+    document
+    .getElementById(
+        "finalLives"
+    )
+    .textContent =
+
+    lives > 0
+    ? "❤️".repeat(lives)
+    : "💔";
+
+}
+
+
+/* =================================
+ RESET
+================================= */
+
+function restartGame(){
+
+    lives = 3;
+
+    score = 0;
+
+    feedCount = 0;
+
+    matchedCount = 0;
+
+    selectedFeedFood =
+    null;
+
+    selectedSortFood =
+    null;
+
+    completedCheckpoints =
+    new Set();
+
+    currentCheckpoint =
+    null;
+
+    quizActive =
+    false;
+
+
+    playerPosition = {
+        row:0,
+        col:0
+    };
+
+
+    updateStatus();
+
+    showScreen("intro");
+
+    setStage(
+        "Mula",
+        0
+    );
+
+
+    mouth.innerHTML =
+    "SERET<br>KE SINI";
+
+}
+
+
+document
+.getElementById("restartBtn")
+.addEventListener(
+    "click",
+    restartGame
+);
+
+
+document
+.getElementById("tryAgainBtn")
+.addEventListener(
+    "click",
+    restartGame
+);
+
+
+updateStatus();
+
+</script>
+
+</body>
+</html>
